@@ -1,8 +1,7 @@
-# water-heating-time
+# 水加热时间计算器
 
 [在线计算器](https://codyray2015.github.io/water-heating-time/)
 
-# 水加热时间计算器
 
 计算器会告诉您在给定的加热功率下从开始到结束温度加热水需要多长时间
 
