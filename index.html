@@ -1,0 +1,377 @@
+<h1 class="fontLarge">水加热时间计算器</h1>
+<p><i>计算器会告诉您在给定的加热功率下从开始到结束温度加热水需要多长时间</i></p>
+<div class="calculator">
+
+    <script type="text/javascript">
+
+        String.prototype.replaceAll = function (search, replacement) {
+            var target = this;
+            return target.split(search).join(replacement);
+        };
+
+        function readField(elementId, convertToUnit) {
+            var temp = "";
+            var inputElement = document.getElementById(elementId);
+            if (inputElement.tagName === 'INPUT' && inputElement.type === 'text') {
+                temp = document.getElementById(elementId).value;
+            }
+            if (inputElement.tagName === 'SELECT') {
+                temp = document.getElementById(elementId).options[document.getElementById(elementId).selectedIndex].value;
+            }
+
+            if (inputElement.tagName === 'INPUT' && inputElement.type === 'checkbox') {
+                if (inputElement.checked) {
+                    temp = 1;
+                }
+                else {
+                    temp = 0;
+                }
+            }
+
+            var tempUnit = "";
+            if (convertToUnit != undefined) {
+                tempUnit = document.getElementById(elementId + 'Unit').options[document.getElementById(elementId + 'Unit').selectedIndex].value;
+                temp = convertFromTo(elementId, tempUnit, convertToUnit, temp);
+            }
+            return temp;
+        }
+
+        function writeField(elementId, value) {
+            var inputElement = document.getElementById(elementId);
+            if (inputElement.tagName === 'INPUT' && inputElement.type === 'text') {
+                inputElement.value = value;
+            }
+            if (inputElement.tagName === 'SELECT') {
+                inputElement.value = value;
+            }
+            if (inputElement.tagName === 'DIV') {
+                inputElement.innerHTML = value;
+            }
+        }
+
+
+        function convertFromTo(elementID, convertFromUnit, convertToUnit, value) {
+            windows[elementID + 'ConvertFromTo'](convertFromUnit, convertToUnit, value);
+        }
+
+        function inputChange() {
+            document.getElementById('result').innerHTML = "?";
+        }
+
+        function setResult(result) {
+            document.getElementById('result').innerHTML = result;
+        }
+
+        function convertVarToDecimal(value, msgOnError) {
+            var strDecimalSeparator = "";
+            var countComma = (value.match(/,/g) || []).length;
+            var countDot = (value.match(/\./g) || []).length;
+
+            if (countComma == 0 && countDot == 0) {
+                strDecimalSeparator = "."; 
+            }
+            else if (countComma == 1 && countDot == 0) {
+                strDecimalSeparator = ",";
+                value = value.replaceAll(",", ".");
+            }
+            else if (countComma == 0 && countDot == 1) {
+                strDecimalSeparator = ".";
+            }
+            else if (countComma == 0 && countDot > 1) {
+                value = value.replaceAll(".", ""); 
+            }
+            else if (countComma > 1 && countDot == 0) {
+                value = value.replaceAll(",", ""); 
+            }
+            else {
+                let iPosLastComma = value.lastIndexOf(",");
+                let iPosLastDot = value.lastIndexOf(".");
+                if (iPosLastComma > iPosLastDot) {
+                    strDecimalSeparator = ",";
+                    value = value.replaceAll(".", "");
+                    value = value.replaceAll(",", ".");
+                }
+                else {
+                    strDecimalSeparator = ".";
+                    value = value.replaceAll(",", "");
+                }
+            }
+
+            value = value.replaceAll("'", "");
+            value = value.replaceAll(" ", "");
+
+            return parseFloat(value);
+        }
+
+        function convertNumberForPrint(value) {
+            var parts = value.toString().split(".");
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+            return parts.join(".");
+        }
+
+        function isNumberExponential(value) {
+            if (value.toString().indexOf("e") >= 0) return true;
+            if (value.toString().indexOf("E") >= 0) return true;
+            return false;
+        }
+
+
+    </script>
+    <script type="text/javascript">
+
+        function readTemp(elementId) {
+            var temp = convertVarToDecimal(readField(elementId));
+            writeField(elementId, temp);
+            var tempUnit = document.getElementById(elementId + 'Unit').options[document.getElementById(elementId + 'Unit').selectedIndex].value;
+            var tempCelsius = 0;
+            if (tempUnit == "c") {
+                tempCelsius = temp;
+            } else if (tempUnit == "f") {
+                tempCelsius = (temp - 32) / 9 * 5;
+            } else {
+                alert('Error: invalid temperature unit');
+            }
+            return tempCelsius;
+        }
+
+        function readVolume(elementId) {
+            var volume = convertVarToDecimal(readField(elementId));
+            writeField(elementId, volume);
+            var volumeUnit = document.getElementById(elementId + 'Unit').options[document.getElementById(elementId + 'Unit').selectedIndex].value;
+            var volumeLiter = 0;
+            if (volumeUnit == "liter") {
+                volumeLiter = volume;
+            } else if (volumeUnit == "gallonus") {
+                volumeLiter = volume * 3.78541;
+            } else if (volumeUnit == "gallonuk") {
+                volumeLiter = volume * 4.546;
+            } else if (volumeUnit == "lb") {
+                volumeLiter = volume * 0.4536;
+            } else if (volumeUnit == "kg") {
+                volumeLiter = volume;
+            } else if (volumeUnit == "cubiccentimeter") {
+                volumeLiter = volume * 0.001;
+            } else if (volumeUnit == "cubicinch") {
+                volumeLiter = volume * 0.016387;
+            } else if (volumeUnit == "cubicfoot") {
+                volumeLiter = volume * 28.316;
+            } else {
+                alert('Error: invalid volume unit: ' + volumeUnit);
+            }
+            return volumeLiter;
+        }
+
+        function readPower(elementId) {
+            var power = convertVarToDecimal(readField(elementId));
+            writeField(elementId, power);
+            var powerUnit = document.getElementById(elementId + 'Unit').options[document.getElementById(elementId + 'Unit').selectedIndex].value;
+            var powerWatt = 0;
+            if (powerUnit == "watt") {
+                powerWatt = power;
+            } else if (powerUnit == "kw") {
+                powerWatt = power * 1000;
+            } else if (powerUnit == "btuh") {
+                powerWatt = power * 0.29307107;
+            } else {
+                alert('Error: invalid power unit');
+            }
+            return powerWatt;
+        }
+
+        var t_calculate = function () {
+            var volumeLiter = readVolume('t_volume');
+            var startTempCelsius = readTemp('t_startTemp');
+            var endTempCelsius = readTemp('t_endTemp');
+            var powerWatt = readPower('t_power');
+            var efficiencyPercent = readField('t_efficiency');
+            efficiencyPercent = efficiencyPercent.replaceAll("%", "");
+            efficiencyPercent = convertVarToDecimal(efficiencyPercent);
+            writeField('t_efficiency', efficiencyPercent);
+            var error = 0;
+            var tempDifferenceCelsius = 0;
+            var resultMinute = 0;
+            var resultHourMin_Hour = 0;
+            var resultHourMin_Min = 0;
+            if (startTempCelsius < 1) {
+                alert("错误：起始温度必须高于冰点");
+                error = 1;
+            }
+            if (endTempCelsius > 99) {
+                alert("错误：最终温度必须低于沸点");
+                error = 1;
+            }
+            if (endTempCelsius < startTempCelsius) {
+                alert("错误：开始温度必须低于结束温度");
+                error = 1;
+            }
+            if (volumeLiter <= 0) {
+                alert("错误：音量必须大于 0");
+                error = 1;
+            }
+            if (efficiencyPercent <= 0.0) {
+                alert("错误：以 % 为单位的效率必须大于 0");
+                error = 1;
+            }
+            if (efficiencyPercent > 100.0) {
+                alert("错误：效率百分比不能大于 100");
+                error = 1;
+            }
+            if (efficiencyPercent < 1.00) {
+                alert("警告：以 % 为单位的效率低于 1.00，这意味着效率低于 1%。请确保这是您的意思。");
+            }
+            tempDifferenceCelsius = endTempCelsius - startTempCelsius;
+            if (error == 0) {
+
+                resultMinute = Math.ceil(volumeLiter * 4186 * tempDifferenceCelsius / powerWatt / 60 / (efficiencyPercent / 100.00));
+                resultHourMin_Hour = Math.floor(resultMinute / 60);
+                resultHourMin_Min = Math.ceil(resultMinute - resultHourMin_Hour * 60);
+                document.getElementById('t_result').innerHTML = resultHourMin_Hour + "h (小时) " + resultHourMin_Min + "min (分钟) [等于 " + resultMinute + "min]";
+            } else {
+                document.getElementById('t_result').value = "错误";
+            }
+        }
+
+        var t_inputChange = function () {
+            document.getElementById('t_result').innerHTML = "?";
+        }
+
+    </script>
+    <style type="text/css">
+        div.line {
+            /*padding-left: 10px;*/
+            margin-bottom: 5px;
+        }
+
+        #t_result {
+            min-width: 5px;
+            min-height: 5px;
+            display: inline-block;
+        }
+
+        .calculator input[type=button] {
+            margin-top: 5px;
+            padding: 5px;
+        }
+
+        div.what {
+            min-width: 255px;
+            display: inline-block;
+        }
+
+        div.number {
+            min-width: 60px;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        div.number input {
+            text-align: right;
+        }
+
+        div.unit {
+            min-width: 60px;
+            display: inline-block;
+            margin-right: 5px;
+        }
+    </style>
+    <div class="content">
+        <p>计算器支持摄氏度/摄氏度、华氏度、瓦特 (w)、千瓦 (Kw)、Btuh、焦耳、英国热量单位 (Btu)、升、加仑、公斤、磅、立方英寸、立方英尺等。</p>
+
+        <p>计算器支持十进制数，使用点或逗号。</p>
+
+        <br>
+
+        <div class="line">
+            <div class="what">水量 (amount of water)</div>
+            <div class="number"><input onchange="t_inputChange()" size="6" value="15.2" id="t_volume" type="text"></div>
+            <div class="unit">
+                <select onchange="t_inputChange()" id="t_volumeUnit">
+                    <option value="liter" selected="selected">升 (liter)</option>
+                    <option value="gallonus">加仑 (gallons 美国 us 3.8L 升)</option>
+                    <option value="gallonuk">加仑 (gallons 联合王国 uk 4.5L 升)</option>
+                    <option value="lb">磅 (lg)</option>
+                    <option value="kg">公斤 (kg)</option>
+                    <option value="cubiccentimeter">立方厘米 (cubic centimeters)</option>
+                    <option value="cubicinch">立方英寸 (cubic inches)</option>
+                    <option value="cubicfoot">立方英尺 (cubic feet)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="line">
+            <div class="what">起始温度 (start temperature)</div>
+            <div class="number"><input onchange="t_inputChange()" size="6" value="2" id="t_startTemp" type="text"></div>
+            <div class="unit">
+                <select onchange="t_inputChange()" id="t_startTempUnit">
+                    <option value="c" selected="selected">°C (摄氏)</option>
+                    <option value="f">°F (华氏温度计)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="line">
+            <div class="what">结束温度 (end temperature)</div>
+            <div class="number"><input onchange="t_inputChange()" size="6" value="72" id="t_endTemp" type="text"></div>
+            <div class="unit">
+                <select onchange="t_inputChange()" id="t_endTempUnit">
+                    <option value="c" selected="selected">°C(摄氏)</option>
+                    <option value="f">°F (华氏温度计)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="line">
+            <div class="what">加热功率 (heating power)</div>
+            <div class="number"><input onchange="t_inputChange()" size="6" value="330" id="t_power" type="text"></div>
+            <div class="unit">
+                <select onchange="t_inputChange()" id="t_powerUnit">
+                    <option selected="selected" value="watt">瓦 (watt)</option>
+                    <option value="kw">千瓦 (kw)</option>
+                    <option value="btuh">热量单位/小时 (BTU/h)</option>
+                </select>
+            </div>
+        </div>
+
+
+        <div class="line">
+            <div class="what">效率 (efficiency)</div>
+            <div class="number"><input onchange="t_inputChange()" size="6" value="100" id="t_efficiency" type="text">
+            </div>
+            <div class="unit">
+                % (百分)
+            </div>
+        </div>
+
+        <div class="line">
+            <div class="what">结果 (result):</div>
+            <div id="t_result">?</div>
+        </div>
+
+        <div class="line">
+            <div class="what"><input onclick="t_calculate()" type="button" value="计算"></div>
+        </div>
+
+        <br>
+        <br>
+        <br>
+        <p>如果您将计算器用于游泳池加热，请添加足够大的安全边际以补偿所有热量损失。</p>
+        <br>
+
+        <h2>公式</h2>
+        <p>水的加热时间计算公式如下：</p>
+
+        <p>（以 kg 为单位的水量） • （以°C 为单位的结束温度 – 以°C 为单位的起始温度） • (4186 焦耳/kg/°C) /（以瓦特为单位的加热功率）= 加热时间（秒）</p>
+
+        <p>使用公式：
+            <br>1) 计算水的重量（公斤）
+            <br>2) 乘以摄氏温差
+            <br>3) 乘以常数 4186
+            <br>4) 除以您的加热功率（瓦特）
+            <br>结果是以秒为单位的加热时间。
+        </p>
+
+        <p>4186 是水的热容常数，意思是使 1 千克水的温度升高 1 摄氏度需要 4186 焦耳的能量。</p>
+        <p>加热功率在公式中以瓦为单位。瓦特定义为每秒焦耳，例如1W = 1 j/s = 1 焦耳每秒。</p>
+    </div>
+
+</div>
